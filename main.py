@@ -6,6 +6,8 @@ from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncod
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
 
 
 data = pd.read_csv('cleaned.csv')
@@ -156,10 +158,19 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
         auc = roc_auc_score(y_test, y_prob, multi_class="ovr")
         print(f"ROC AUC Score: {auc:.2f}")
 
-log_reg = LogisticRegression()
-log_reg.fit(X_train, y_train)
+# log_reg = LogisticRegression()
+# log_reg.fit(X_train, y_train)
 
-y_prob_lr = log_reg.predict_proba(X_test)
+# y_prob_lr = log_reg.predict_proba(X_test)
 
-print('=====LOGISTIC REGRESSION METRICS=====')
-evaluate_model(log_reg, X_test, y_test, y_prob_lr)
+# print('=====LOGISTIC REGRESSION METRICS=====')
+# evaluate_model(log_reg, X_test, y_test, y_prob_lr)
+
+
+dt = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt.fit(X_train, y_train)
+print('=====DESCISION TREE CLASSIFIER METRICS=====')
+
+evaluate_model(dt, X_test, y_test)
+
+
