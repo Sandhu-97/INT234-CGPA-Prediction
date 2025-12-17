@@ -10,6 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from sklearn.cluster import KMeans
 
 
 data = pd.read_csv('cleaned.csv')
@@ -201,12 +202,47 @@ print('=====SUPPORT VECTOR CLASSIFIER METRICS=====')
 evaluate_model(svm, X_test, y_test, y_prob_svm)
 
 
-results = pd.DataFrame([
-    ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
-    ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
-    ["Naive Bayes", *evaluate_model(nb, X_test, y_test)],
-    ["KNN", *evaluate_model(knn, X_test, y_test)],
-    ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
-], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
+# results = pd.DataFrame([
+#     ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
+#     ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
+#     ["Naive Bayes", *evaluate_model(nb, X_test, y_test)],
+#     ["KNN", *evaluate_model(knn, X_test, y_test)],
+#     ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
+# ], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
 
-print(results)
+# print(results)
+
+X_cluster = data_scaled[[
+    "study_hours",
+    "sleep_hours",
+    "attendance",
+    "screen_time",
+    "activities",
+    "stress"
+]]
+inertia =  []
+for k in range(1, 11):
+    km = KMeans(n_clusters=k, random_state=42)
+    km.fit(X_cluster)
+    inertia.append(km.inertia_)
+
+# plt.plot(range(1, 11), inertia, marker="o")
+# plt.xlabel("Number of Clusters")
+# plt.ylabel("Inertia")
+# plt.title("Elbow Method")
+# plt.show()
+
+
+kmeans = KMeans(n_clusters=3, random_state=42)
+data["cluster"] = kmeans.fit_predict(X_cluster)
+
+cluster_summary = data.groupby("cluster")[[
+    "study_hours",
+    "sleep_hours",
+    "attendance",
+    "screen_time",
+    "stress",
+    "cgpa"
+]].mean()
+
+print(cluster_summary)
