@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 
 
 data = pd.read_csv('cleaned.csv')
@@ -167,14 +168,22 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
 # evaluate_model(log_reg, X_test, y_test, y_prob_lr)
 
 
-dt = DecisionTreeClassifier(max_depth=5, random_state=42)
-dt.fit(X_train, y_train)
+# dt = DecisionTreeClassifier(max_depth=5, random_state=42)
+# dt.fit(X_train, y_train)
 
-print('=====DESCISION TREE CLASSIFIER METRICS=====')
-evaluate_model(dt, X_test, y_test)
+# print('=====DESCISION TREE CLASSIFIER METRICS=====')
+# evaluate_model(dt, X_test, y_test)
 
-nb = GaussianNB()
-nb.fit(X_train, y_train
-       )
-print('=====NAIVES BAYES METRICS=====')
-evaluate_model(nb, X_test, y_test)
+
+# nb = GaussianNB()
+# nb.fit(X_train, y_train)
+
+# print('=====NAIVES BAYES METRICS=====')
+# evaluate_model(nb, X_test, y_test)
+
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
+evaluate_model(knn, X_test, y_test)
