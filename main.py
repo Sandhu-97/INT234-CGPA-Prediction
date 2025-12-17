@@ -18,12 +18,12 @@ data = pd.read_csv('cleaned.csv')
 
 print('=====EXPLORATORY DATA ANALYSIS=====')
 print('Shape:', data.shape)
-print('Preview:\n', data.head())
-print("Info:\n", data.info())
-print("Describe:\n", data.describe())
+print('\nPreview:\n', data.head())
+print("\nInfo:\n", data.info())
+print("\nDescribe:\n", data.describe())
 
 
-print('Missing values check:')
+print('\nMissing values check:')
 print(data.isnull().sum())
 
 
@@ -82,6 +82,7 @@ y = data["cgpa"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_size=0.2)
 
 
+# LINEAR REGRESSION
 linear_reg = LinearRegression()
 linear_reg.fit(X_train, y_train)
 
@@ -93,7 +94,7 @@ mse_linear_reg = mean_squared_error(y_test, y_pred_linear_reg)
 rmse_linear_reg = np.sqrt(mse_linear_reg)
 r2_linear_reg = r2_score(y_test, y_pred_linear_reg)
 
-print("Linear Regression Metrics")
+print("\n=====Linear Regression Metrics=====")
 print("MAE:", mae_linear_reg)
 print("MSE:", mse_linear_reg)
 print("RMSE:", rmse_linear_reg)
@@ -108,6 +109,7 @@ plt.title("Linear Regression: Actual vs Predicted")
 plt.show()
 
 
+# POLYNOMIAL REGRESSION
 poly = PolynomialFeatures(degree=2, include_bias=False)
 X_poly = poly.fit_transform(data_scaled[reg_features])
 
@@ -120,7 +122,7 @@ lr_poly.fit(X_train_p, y_train_p)
 
 y_pred_poly = lr_poly.predict(X_test_p)
 
-print("Polynomial Regression Metrics")
+print("\n=====Polynomial Regression Metrics=====")
 print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
 print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
 print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
@@ -131,7 +133,7 @@ plt.scatter(y_test, y_pred_poly, alpha=0.6)
 plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
 plt.xlabel("Actual CGPA")
 plt.ylabel("Predicted CGPA")
-plt.title("Linear Regression: Actual vs Predicted")
+plt.title("Polynomial Regression: Actual vs Predicted")
 plt.show()
 
 coeff_df = pd.DataFrame({
@@ -139,8 +141,10 @@ coeff_df = pd.DataFrame({
     "Coefficient": linear_reg.coef_
 })
 
-print("MLE Coeffs:\n", coeff_df.sort_values(by="Coefficient", ascending=False))
+print("\n=====MLE Coeffs:=====\n", coeff_df.sort_values(by="Coefficient", ascending=False))
 
+
+# LABEL ENCODING
 def cgpa_category(cgpa):
     if cgpa < 7:
         return "Low"
@@ -151,7 +155,7 @@ def cgpa_category(cgpa):
 
 data["cgpa_category"] = data["cgpa"].apply(cgpa_category)
 
-print("CGPA Distribution:\n", data['cgpa_category'].value_counts())
+print("\n=====CGPA Distribution:=====\n", data['cgpa_category'].value_counts())
 
 le = LabelEncoder()
 data["cgpa_cat_encoded"] = le.fit_transform(data["cgpa_category"])
@@ -180,33 +184,26 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
     rec = recall_score(y_test, y_pred, average='weighted')
     f1 = f1_score(y_test, y_pred, average='weighted')
 
-    print(f"Accuracy Score: {acc:.2f}")
-    print(f"Precision Score: {prec:.2f}")
-    print(f"Recall Score: {rec:.2f}")
-    print(f"F1 Score: {f1:.2f}")
 
     if y_prob is not None:
         auc = roc_auc_score(y_test, y_prob, multi_class="ovr")
-        print(f"ROC AUC Score: {auc:.2f}")
     else:
         auc = "NA"
+
     return acc, prec, rec, f1, auc
 
 
+# LOGISTIC REGRESSION
 log_reg = LogisticRegression(random_state=42)
 log_reg.fit(X_train, y_train)
-
 y_prob_lr = log_reg.predict_proba(X_test)
 
-print('=====LOGISTIC REGRESSION METRICS=====')
-evaluate_model(log_reg, X_test, y_test, y_prob_lr)
 
-
+# DECISION TREE CLASSIFIER
 dt = DecisionTreeClassifier(max_depth=5, random_state=42)
 dt.fit(X_train, y_train)
 
-print('=====DESCISION TREE CLASSIFIER METRICS=====')
-evaluate_model(dt, X_test, y_test)
+
 plt.figure(figsize=(20,10))
 plot_tree(
     dt,
@@ -220,31 +217,30 @@ plt.title("Decision Tree Classifier")
 plt.show()
 
 
+# GAUSSIAN NAIVE BAYES 
 nb = GaussianNB()
 nb.fit(X_train, y_train)
 
-print('=====NAIVES BAYES METRICS=====')
-evaluate_model(nb, X_test, y_test)
 
-
+# K NEAREST NEIGHBORS
 knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(X_train, y_train)
 
-print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
-evaluate_model(knn, X_test, y_test)
 
+# SUPPORT VECTOR MACHINE
 svm = SVC(kernel="rbf", probability=True)
 svm.fit(X_train, y_train)
-
 y_prob_svm = svm.predict_proba(X_test)
-print('=====SUPPORT VECTOR CLASSIFIER METRICS=====')
-evaluate_model(svm, X_test, y_test, y_prob_svm)
+
+# SVM CONFUSION MATRIX
 cm = confusion_matrix(y_test, svm.predict(X_test))
 disp = ConfusionMatrixDisplay(cm, display_labels=le.classes_)
 disp.plot(cmap="Blues")
 plt.title("SVM Confusion Matrix")
 plt.show()
 
+
+# CLASSIFICATION METRICS
 results = pd.DataFrame([
     ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
     ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
@@ -253,8 +249,10 @@ results = pd.DataFrame([
     ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
 ], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
 
-print(results)
+print("\n=====Classification Algorithms Metrics=====\n", results)
 
+
+# K-MEANS 
 X_cluster = data_scaled[[
     "study_hours",
     "sleep_hours",
@@ -288,4 +286,5 @@ cluster_summary = data.groupby("cluster")[[
     "cgpa"
 ]].mean()
 
+print("\n=====K-Means Cluster Summary:=====")
 print(cluster_summary)
