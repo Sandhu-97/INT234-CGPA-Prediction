@@ -83,3 +83,20 @@ print("MAE:", mae_linear_reg)
 print("MSE:", mse_linear_reg)
 print("RMSE:", rmse_linear_reg)
 print("R2:", r2_linear_reg)
+
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly.fit_transform(X)
+
+X_train_p, X_test_p, y_train_p, y_test_p = train_test_split(X_poly, y, test_size=0.2, random_state=42)
+
+lr_poly = LinearRegression()
+lr_poly.fit(X_train_p, y_train_p)
+
+
+y_pred_poly = lr_poly.predict(X_test_p)
+
+print("Polynomial Regression Metrics")
+print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
+print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
+print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
+print("R2:", r2_score(y_test_p, y_pred_poly))
