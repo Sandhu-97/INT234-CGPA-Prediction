@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 
@@ -122,3 +122,44 @@ print("CGPA Distribution:\n", data['cgpa_category'].value_counts())
 
 le = LabelEncoder()
 data["cgpa_cat_encoded"] = le.fit_transform(data["cgpa_category"])
+
+
+X_cls = data_scaled[[
+    "study_hours",
+    "sleep_hours",
+    "attendance",
+    "screen_time",
+    "activities",
+    "stress",
+    "prev_gpa"
+]]
+
+y_cls = data["cgpa_cat_encoded"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_cls, y_cls, test_size=0.2, random_state=42, stratify=y_cls
+)
+
+def evaluate_model(model , X_test, y_test, y_prob=None):
+    y_pred = model.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, average='weighted')
+    rec = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+
+    print(f"Accuracy Score: {acc:.2f}")
+    print(f"Precision Score: {prec:.2f}")
+    print(f"Recall Score: {rec:.2f}")
+    print(f"F1 Score: {f1:.2f}")
+
+    if y_prob is not None:
+        auc = roc_auc_score(y_test, y_prob, multi_class="ovr")
+        print(f"ROC AUC Score: {auc:.2f}")
+
+log_reg = LogisticRegression()
+log_reg.fit(X_train, y_train)
+
+y_prob_lr = log_reg.predict_proba(X_test)
+
+print('=====LOGISTIC REGRESSION METRICS=====')
+evaluate_model(log_reg, X_test, y_test, y_prob_lr)
