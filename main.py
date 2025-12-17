@@ -35,29 +35,29 @@ data_scaled[scaled_cols] = scaler.fit_transform(data_scaled[scaled_cols])
 
 #VISUALIZATION
 
-# CORRELATION HEATMAP
-sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
-plt.title('Correlation Heatmap')
-plt.show()
+# # CORRELATION HEATMAP
+# sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+# plt.title('Correlation Heatmap')
+# plt.show()
 
-# DATA DISTRIBUTION 
-data.hist(figsize=(12, 8))
-plt.tight_layout()
-plt.show()
+# # DATA DISTRIBUTION 
+# data.hist(figsize=(12, 8))
+# plt.tight_layout()
+# plt.show()
 
-sns.scatterplot(x="attendance", y="cgpa", data=data)
-plt.title("Attendance vs CGPA")
-plt.show()
-
-
-sns.scatterplot(x="study_hours", y="cgpa", data=data)
-plt.title("Study Hours vs CGPA")
-plt.show()
+# sns.scatterplot(x="attendance", y="cgpa", data=data)
+# plt.title("Attendance vs CGPA")
+# plt.show()
 
 
-sns.scatterplot(x="screen_time", y="cgpa", data=data)
-plt.title("Phone Usage vs CGPA")
-plt.show()
+# sns.scatterplot(x="study_hours", y="cgpa", data=data)
+# plt.title("Study Hours vs CGPA")
+# plt.show()
+
+
+# sns.scatterplot(x="screen_time", y="cgpa", data=data)
+# plt.title("Phone Usage vs CGPA")
+# plt.show()
 
 # MODEL TRAINING
 
@@ -78,11 +78,11 @@ mse_linear_reg = mean_squared_error(y_test, y_pred_linear_reg)
 rmse_linear_reg = np.sqrt(mse_linear_reg)
 r2_linear_reg = r2_score(y_test, y_pred_linear_reg)
 
-print("Linear Regression Metrics")
-print("MAE:", mae_linear_reg)
-print("MSE:", mse_linear_reg)
-print("RMSE:", rmse_linear_reg)
-print("R2:", r2_linear_reg)
+# print("Linear Regression Metrics")
+# print("MAE:", mae_linear_reg)
+# print("MSE:", mse_linear_reg)
+# print("RMSE:", rmse_linear_reg)
+# print("R2:", r2_linear_reg)
 
 poly = PolynomialFeatures(degree=2, include_bias=False)
 X_poly = poly.fit_transform(X)
@@ -95,8 +95,30 @@ lr_poly.fit(X_train_p, y_train_p)
 
 y_pred_poly = lr_poly.predict(X_test_p)
 
-print("Polynomial Regression Metrics")
-print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
-print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
-print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
-print("R2:", r2_score(y_test_p, y_pred_poly))
+# print("Polynomial Regression Metrics")
+# print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
+# print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
+# print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
+# print("R2:", r2_score(y_test_p, y_pred_poly))
+
+coeff_df = pd.DataFrame({
+    "Feature": X.columns,
+    "Coefficient": linear_reg.coef_
+})
+
+print("MLE Coeffs:\n", coeff_df.sort_values(by="Coefficient", ascending=False))
+
+def cgpa_category(cgpa):
+    if cgpa < 7:
+        return "Low"
+    elif cgpa < 8.5:
+        return "Medium"
+    else:
+        return "High"
+
+data["cgpa_category"] = data["cgpa"].apply(cgpa_category)
+
+print("CGPA Distribution:\n", data['cgpa_category'].value_counts())
+
+le = LabelEncoder()
+data["cgpa_cat_encoded"] = le.fit_transform(data["cgpa_category"])
