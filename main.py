@@ -159,35 +159,39 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
     if y_prob is not None:
         auc = roc_auc_score(y_test, y_prob, multi_class="ovr")
         print(f"ROC AUC Score: {auc:.2f}")
-
-# log_reg = LogisticRegression()
-# log_reg.fit(X_train, y_train)
-
-# y_prob_lr = log_reg.predict_proba(X_test)
-
-# print('=====LOGISTIC REGRESSION METRICS=====')
-# evaluate_model(log_reg, X_test, y_test, y_prob_lr)
+    else:
+        auc = "NA"
+    return acc, prec, rec, f1, auc
 
 
-# dt = DecisionTreeClassifier(max_depth=5, random_state=42)
-# dt.fit(X_train, y_train)
+log_reg = LogisticRegression()
+log_reg.fit(X_train, y_train)
 
-# print('=====DESCISION TREE CLASSIFIER METRICS=====')
-# evaluate_model(dt, X_test, y_test)
+y_prob_lr = log_reg.predict_proba(X_test)
 
-
-# nb = GaussianNB()
-# nb.fit(X_train, y_train)
-
-# print('=====NAIVES BAYES METRICS=====')
-# evaluate_model(nb, X_test, y_test)
+print('=====LOGISTIC REGRESSION METRICS=====')
+evaluate_model(log_reg, X_test, y_test, y_prob_lr)
 
 
-# knn = KNeighborsClassifier(n_neighbors=5)
-# knn.fit(X_train, y_train)
+dt = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt.fit(X_train, y_train)
 
-# print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
-# evaluate_model(knn, X_test, y_test)
+print('=====DESCISION TREE CLASSIFIER METRICS=====')
+evaluate_model(dt, X_test, y_test)
+
+
+nb = GaussianNB()
+nb.fit(X_train, y_train)
+
+print('=====NAIVES BAYES METRICS=====')
+evaluate_model(nb, X_test, y_test)
+
+
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
+evaluate_model(knn, X_test, y_test)
 
 svm = SVC(kernel="rbf", probability=True)
 svm.fit(X_train, y_train)
@@ -195,3 +199,14 @@ svm.fit(X_train, y_train)
 y_prob_svm = svm.predict_proba(X_test)
 print('=====SUPPORT VECTOR CLASSIFIER METRICS=====')
 evaluate_model(svm, X_test, y_test, y_prob_svm)
+
+
+results = pd.DataFrame([
+    ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
+    ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
+    ["Naive Bayes", *evaluate_model(nb, X_test, y_test)],
+    ["KNN", *evaluate_model(knn, X_test, y_test)],
+    ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
+], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
+
+print(results)
