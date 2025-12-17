@@ -58,3 +58,28 @@ plt.show()
 sns.scatterplot(x="screen_time", y="cgpa", data=data)
 plt.title("Phone Usage vs CGPA")
 plt.show()
+
+# MODEL TRAINING
+
+X = data.drop(columns=['cgpa'])
+y = data['cgpa']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_size=0.2)
+
+
+linear_reg = LinearRegression()
+linear_reg.fit(X_train, y_train)
+
+y_pred_linear_reg = linear_reg.predict(X_test)
+
+
+mae_linear_reg = mean_absolute_error(y_test, y_pred_linear_reg)
+mse_linear_reg = mean_squared_error(y_test, y_pred_linear_reg)
+rmse_linear_reg = np.sqrt(mse_linear_reg)
+r2_linear_reg = r2_score(y_test, y_pred_linear_reg)
+
+print("Linear Regression Metrics")
+print("MAE:", mae_linear_reg)
+print("MSE:", mse_linear_reg)
+print("RMSE:", rmse_linear_reg)
+print("R2:", r2_linear_reg)
