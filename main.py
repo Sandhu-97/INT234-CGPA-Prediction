@@ -5,8 +5,8 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -41,33 +41,43 @@ data_scaled[scaled_cols] = scaler.fit_transform(data_scaled[scaled_cols])
 #VISUALIZATION
 
 # # CORRELATION HEATMAP
-# sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
-# plt.title('Correlation Heatmap')
-# plt.show()
+sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Heatmap')
+plt.show()
 
 # # DATA DISTRIBUTION 
-# data.hist(figsize=(12, 8))
-# plt.tight_layout()
-# plt.show()
+data.hist(figsize=(12, 8))
+plt.tight_layout()
+plt.show()
 
-# sns.scatterplot(x="attendance", y="cgpa", data=data)
-# plt.title("Attendance vs CGPA")
-# plt.show()
-
-
-# sns.scatterplot(x="study_hours", y="cgpa", data=data)
-# plt.title("Study Hours vs CGPA")
-# plt.show()
+sns.scatterplot(x="attendance", y="cgpa", data=data)
+plt.title("Attendance vs CGPA")
+plt.show()
 
 
-# sns.scatterplot(x="screen_time", y="cgpa", data=data)
-# plt.title("Phone Usage vs CGPA")
-# plt.show()
+sns.scatterplot(x="study_hours", y="cgpa", data=data)
+plt.title("Study Hours vs CGPA")
+plt.show()
+
+
+sns.scatterplot(x="screen_time", y="cgpa", data=data)
+plt.title("Phone Usage vs CGPA")
+plt.show()
 
 # MODEL TRAINING
 
-X = data.drop(columns=['cgpa'])
-y = data['cgpa']
+reg_features = [
+    "study_hours",
+    "sleep_hours",
+    "attendance",
+    "screen_time",
+    "activities",
+    "stress",
+    "prev_gpa"
+]
+
+X = data[reg_features]
+y = data["cgpa"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_size=0.2)
 
@@ -83,14 +93,24 @@ mse_linear_reg = mean_squared_error(y_test, y_pred_linear_reg)
 rmse_linear_reg = np.sqrt(mse_linear_reg)
 r2_linear_reg = r2_score(y_test, y_pred_linear_reg)
 
-# print("Linear Regression Metrics")
-# print("MAE:", mae_linear_reg)
-# print("MSE:", mse_linear_reg)
-# print("RMSE:", rmse_linear_reg)
-# print("R2:", r2_linear_reg)
+print("Linear Regression Metrics")
+print("MAE:", mae_linear_reg)
+print("MSE:", mse_linear_reg)
+print("RMSE:", rmse_linear_reg)
+print("R2:", r2_linear_reg)
+
+plt.figure(figsize=(6,6))
+plt.scatter(y_test, y_pred_linear_reg, alpha=0.6)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
+plt.xlabel("Actual CGPA")
+plt.ylabel("Predicted CGPA")
+plt.title("Linear Regression: Actual vs Predicted")
+plt.show()
+
 
 poly = PolynomialFeatures(degree=2, include_bias=False)
-X_poly = poly.fit_transform(X)
+X_poly = poly.fit_transform(data_scaled[reg_features])
+
 
 X_train_p, X_test_p, y_train_p, y_test_p = train_test_split(X_poly, y, test_size=0.2, random_state=42)
 
@@ -100,11 +120,19 @@ lr_poly.fit(X_train_p, y_train_p)
 
 y_pred_poly = lr_poly.predict(X_test_p)
 
-# print("Polynomial Regression Metrics")
-# print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
-# print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
-# print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
-# print("R2:", r2_score(y_test_p, y_pred_poly))
+print("Polynomial Regression Metrics")
+print("MAE:", mean_absolute_error(y_test_p, y_pred_poly))
+print("MSE:", mean_squared_error(y_test_p, y_pred_poly))
+print("RMSE:", np.sqrt(mean_squared_error(y_test_p, y_pred_poly)))
+print("R2:", r2_score(y_test_p, y_pred_poly))
+
+plt.figure(figsize=(6,6))
+plt.scatter(y_test, y_pred_poly, alpha=0.6)
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
+plt.xlabel("Actual CGPA")
+plt.ylabel("Predicted CGPA")
+plt.title("Linear Regression: Actual vs Predicted")
+plt.show()
 
 coeff_df = pd.DataFrame({
     "Feature": X.columns,
@@ -165,7 +193,7 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
     return acc, prec, rec, f1, auc
 
 
-log_reg = LogisticRegression()
+log_reg = LogisticRegression(random_state=42)
 log_reg.fit(X_train, y_train)
 
 y_prob_lr = log_reg.predict_proba(X_test)
@@ -179,6 +207,17 @@ dt.fit(X_train, y_train)
 
 print('=====DESCISION TREE CLASSIFIER METRICS=====')
 evaluate_model(dt, X_test, y_test)
+plt.figure(figsize=(20,10))
+plot_tree(
+    dt,
+    feature_names=X_cls.columns,
+    class_names=le.classes_,
+    filled=True,
+    impurity=False,
+    rounded=True
+)
+plt.title("Decision Tree Classifier")
+plt.show()
 
 
 nb = GaussianNB()
@@ -200,17 +239,21 @@ svm.fit(X_train, y_train)
 y_prob_svm = svm.predict_proba(X_test)
 print('=====SUPPORT VECTOR CLASSIFIER METRICS=====')
 evaluate_model(svm, X_test, y_test, y_prob_svm)
+cm = confusion_matrix(y_test, svm.predict(X_test))
+disp = ConfusionMatrixDisplay(cm, display_labels=le.classes_)
+disp.plot(cmap="Blues")
+plt.title("SVM Confusion Matrix")
+plt.show()
 
+results = pd.DataFrame([
+    ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
+    ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
+    ["Naive Bayes", *evaluate_model(nb, X_test, y_test)],
+    ["KNN", *evaluate_model(knn, X_test, y_test)],
+    ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
+], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
 
-# results = pd.DataFrame([
-#     ["Logistic Regression", *evaluate_model(log_reg, X_test, y_test, y_prob_lr)],
-#     ["Decision Tree", *evaluate_model(dt, X_test, y_test)],
-#     ["Naive Bayes", *evaluate_model(nb, X_test, y_test)],
-#     ["KNN", *evaluate_model(knn, X_test, y_test)],
-#     ["SVM", *evaluate_model(svm, X_test, y_test, y_prob_svm)]
-# ], columns=["Model", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"])
-
-# print(results)
+print(results)
 
 X_cluster = data_scaled[[
     "study_hours",
@@ -226,11 +269,11 @@ for k in range(1, 11):
     km.fit(X_cluster)
     inertia.append(km.inertia_)
 
-# plt.plot(range(1, 11), inertia, marker="o")
-# plt.xlabel("Number of Clusters")
-# plt.ylabel("Inertia")
-# plt.title("Elbow Method")
-# plt.show()
+plt.plot(range(1, 11), inertia, marker="o")
+plt.xlabel("Number of Clusters")
+plt.ylabel("Inertia")
+plt.title("Elbow Method")
+plt.show()
 
 
 kmeans = KMeans(n_clusters=3, random_state=42)
