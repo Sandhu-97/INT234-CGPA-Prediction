@@ -31,3 +31,30 @@ scaled_cols = [
 
 data_scaled = data.copy()
 data_scaled[scaled_cols] = scaler.fit_transform(data_scaled[scaled_cols])
+
+
+#VISUALIZATION
+
+# CORRELATION HEATMAP
+sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Heatmap')
+plt.show()
+
+# DATA DISTRIBUTION 
+data.hist(figsize=(12, 8))
+plt.tight_layout()
+plt.show()
+
+sns.scatterplot(x="attendance", y="cgpa", data=data)
+plt.title("Attendance vs CGPA")
+plt.show()
+
+
+sns.scatterplot(x="study_hours", y="cgpa", data=data)
+plt.title("Study Hours vs CGPA")
+plt.show()
+
+
+sns.scatterplot(x="screen_time", y="cgpa", data=data)
+plt.title("Phone Usage vs CGPA")
+plt.show()
