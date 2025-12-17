@@ -169,8 +169,12 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
 
 dt = DecisionTreeClassifier(max_depth=5, random_state=42)
 dt.fit(X_train, y_train)
-print('=====DESCISION TREE CLASSIFIER METRICS=====')
 
+print('=====DESCISION TREE CLASSIFIER METRICS=====')
 evaluate_model(dt, X_test, y_test)
 
-
+nb = GaussianNB()
+nb.fit(X_train, y_train
+       )
+print('=====NAIVES BAYES METRICS=====')
+evaluate_model(nb, X_test, y_test)
