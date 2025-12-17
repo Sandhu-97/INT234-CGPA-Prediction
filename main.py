@@ -9,6 +9,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, a
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 
 data = pd.read_csv('cleaned.csv')
@@ -182,8 +183,15 @@ def evaluate_model(model , X_test, y_test, y_prob=None):
 # evaluate_model(nb, X_test, y_test)
 
 
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
+# knn = KNeighborsClassifier(n_neighbors=5)
+# knn.fit(X_train, y_train)
 
-print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
-evaluate_model(knn, X_test, y_test)
+# print('=====K NEAREST NEIGHBOURS CLASSIFIER METRICS=====')
+# evaluate_model(knn, X_test, y_test)
+
+svm = SVC(kernel="rbf", probability=True)
+svm.fit(X_train, y_train)
+
+y_prob_svm = svm.predict_proba(X_test)
+print('=====SUPPORT VECTOR CLASSIFIER METRICS=====')
+evaluate_model(svm, X_test, y_test, y_prob_svm)
